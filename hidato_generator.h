@@ -1,7 +1,6 @@
 //
 //  HidatoGenerator.h
 //
-//
 
 #ifndef HidatoGenerator_h
 #define HidatoGenerator_h
@@ -9,23 +8,46 @@
 #include <vector>
 #include <algorithm>
 #include <cstdlib>
-#include <ctime>
 #include <cmath>
 #include <iostream>
+#include <random>
 
-using namespace std;
+class Random {
+public:
+    static void setRandomSeed() {
+        gen.seed(std::time(0));
+    }
+
+    static int range(int min, int max) {
+        std::uniform_int_distribution<int> distribution(min, max);
+        return distribution(gen);
+    }
+
+    static double range(double min, double max) {
+        std::uniform_real_distribution<double> distribution(min, max);
+        return distribution(gen);
+    }
+
+private:
+    static std::mt19937 gen;
+
+};
+
+std::mt19937 Random::gen;
 
 class Hidato {
 public:
     // difficulty = 0 ~ 1 (easy - hard)
-    static int generate(vector<int> &map, int width, int height, float difficulty) {
+    static int generate(std::vector<int> &map, int width, int height, float difficulty) {
+        Random::setRandomSeed();
+
         Generator gen(map, width, height);
         
         int c = 10;
         while (c--) {
             gen.randomize();
             if (gen.simulate(10, 0.1, 100000) == 0) {
-                gen.extract(map);
+                gen.putNumbers(map);
                 break;
             }
             gen.reset();
@@ -34,12 +56,16 @@ public:
         
         return 1;
     }
+
+    static bool verify(std::vector<int> &map, int width, int height) {
+        
+    }
     
 private:
     /* ----- Generator class ----- */
     class Generator {
     public:
-        Generator(const vector<int> &m, int width, int height) : width(width), height(height) {
+        Generator(const std::vector<int> &m, int width, int height) : width(width), height(height) {
             size = width * height;
             for (int i = 0; i < size; i++) {
                 next.push_back(0);
@@ -61,7 +87,7 @@ private:
             int x = index % width, y = index / width;
             do {
                 // 랜덤한 8 방향중 하나를 선택함
-                int dx = (rand() % 3) - 1, dy = (rand() % 3) - 1;
+                int dx = Random::range(-1, 1), dy = Random::range(-1, 1);
                 if (dx == 0 && dy == 0) continue;
                 int nx = x + dx, ny = y + dy;
                 if (nx < 0 || nx >= width || ny < 0 || ny >= height) continue;
@@ -82,14 +108,14 @@ private:
             for (int step = 0; step < steps; step++) {
                 // step동안 10에서 시작해서 1.35xxx로 수렴하는 값
                 double temp = max * exp(factor * step / steps);
-                pair<int, int> undoData = moveRandom();
+                std::pair<int, int> undoData = moveRandom();
                 // 랜덤으로 타일을 깔고 끝났을 때 남은 빈 공간의 수를 저장함
                 curCount = blankCount();
                 double delta = curCount - prevCount;
                 // 랜덤으로 타일을 깔고 남은 빈 공간이 이전 상태보다 많으면 되돌림
                 // 뒤의 조건은 엄청 복잡해 보이지만 결과적으로 값의 차이가 적을 수록 되돌아갈 확률이 높아지게 하는 조건
                 // 그런데 exp함수 때문인지 없는게 더 빠름
-                if (delta > 0 && exp(-delta / temp) < ((double)rand() / (double)RAND_MAX)) {
+                if (delta > 0 && exp(-delta / temp) < Random::range(0.0, 1.0)) {
                     undo(undoData);
                 } else {
                     prevCount = curCount;
@@ -106,7 +132,9 @@ private:
             return bestCount;
         }
         
-        int extract(vector<int> &grid) {
+        // 저장된 순서에 따라 입력으로 받은 배열에 빈 칸이 나오지 않을 때 까지 숫자를 순차적으로 넣음
+        // 끝나면 마지막으로 넣은 숫자 - 1 값을 반환함(맵에 채워진 칸 수)
+        int putNumbers(std::vector<int> &grid) {
             int index = start, num = 1;
             while (grid[index] == 0) {
                 grid[index] = num++;
@@ -115,15 +143,16 @@ private:
             return num - 1;
         }
         
+        // 맵에 빈 칸이 몇 개인지 체크하는 함수
         int blankCount() {
-            vector<int> grid;
+            std::vector<int> grid;
             for (int i = 0; i < size; i++) grid.push_back(0);
-            int cnt = extract(grid);
+            int cnt = putNumbers(grid);
             return realSize - cnt;
         }
         
         // 랜덤한 위치의 타일에서 원래 갖고 있던 이웃 타일 위치를 다른 이웃 타일로 옮기는 함수
-        pair<int, int> moveRandom() {
+        std::pair<int, int> moveRandom() {
             // 랜덤한 위치를 뽑아서
             int index = getRandomIndex();
             // 그 위치의 이웃 타일 중 하나를 선택
@@ -137,10 +166,10 @@ private:
             next[index] = after;
             
             // 틀렸을 때 복구하기 위한
-            return make_pair(index, before);
+            return std::make_pair(index, before);
         }
         
-        void undo(pair<int, int> data) {
+        void undo(std::pair<int, int> data) {
             next[data.first] = data.second;
         }
         
@@ -148,7 +177,7 @@ private:
         int getRandomIndex() {
             int ret;
             do {
-                ret = rand() % size;
+                ret = Random::range(0, size - 1);
                 if (map[ret] != -1) break;
             } while (true);
             
@@ -174,7 +203,7 @@ private:
         int width, height, size;
         int realSize = 0; // x칸을 제외 한 실제 크기
         int start;
-        vector<int> next, map;
+        std::vector<int> next, map;
         
     };
     
