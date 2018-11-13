@@ -37,30 +37,88 @@ std::mt19937 Random::gen;
 
 class Hidato {
 public:
-    // difficulty = 0 ~ 1 (easy - hard)
-    static int generate(std::vector<int> &map, int width, int height, float difficulty) {
+    static Hidato *get() {
+        return &instance;
+    }
+
+    // difficulty = 0 ~ 1 (easy ~ hard)
+    int generate(std::vector<int> &map, int width, int height, float difficulty) {
         Random::setRandomSeed();
+
+        // set solution map
+        for (int i = 0; i < width * height; i++) solution.push_back(map[i]);
 
         Generator gen(map, width, height);
         
         int c = 10;
         while (c--) {
             gen.randomize();
-            if (gen.simulate(10, 0.1, 100000) == 0) {
-                gen.putNumbers(map);
-                break;
-            }
+            if (gen.simulate(10, 0.1, 100000) == 0) break;
             gen.reset();
         }
         if (c <= 0) return -1;
+
+        gen.punch(difficulty);
+
+        gen.putNumbers(map);
+        gen.putNumbers(solution);
         
         return 1;
     }
 
-    static bool verify(std::vector<int> &map, int width, int height) {
-        
+    // 1 = 정답, -1 = 문제와 다름, -2 = 이어지지 않음, -3 = 기타
+    int verify(std::vector<int> &map, int width, int height) {
+        // difference check
+        // for (int i = 0; i < width * height; i++) {
+        //     if (solution[i] != map[i]) {
+        //         return -1;
+        //     }
+        // }
+
+        // find 1 index and last number(max number)
+        int index = -1, checkNumber = 2, lastNumber = -1;
+        for (int i = 0; i < width * height; i++) {
+            if (map[i] == 1) index = i;
+            if (map[i] > lastNumber) lastNumber = map[i];
+        }
+
+        while (checkNumber != lastNumber) {
+            int count = 0;
+            bool flag = true;
+            // 현재 인덱스 기준 이웃 8칸 범위에서 다음 숫자를 찾음
+            for (int i = -1; i <= 1 && flag; i++) {
+                for (int j = -1; j <= 1 && flag; j++) {
+                    if (i == 0 && j == 0) continue;
+
+                    int x = index % width + j, y = index / width + i;
+                    int di = y * width + x;
+
+                    // 이웃 타일의 값이 다음 숫자와 일치하지 않거나 맵을 벗어났으면 그 다음 이웃 타일을 검사함
+                    if (x > width - 1 || x < 0 || y > height - 1 || y < 0 || map[di] != checkNumber) {
+                        count += 1;
+                        continue;
+                    }
+                    checkNumber += 1;
+                    index = di;
+                    // 일치하면 반복문을 빠져나감
+                    flag = false;
+                }
+            }
+            // 이웃 타일 8개 전부 다 다르면 오류
+            if (count >= 8) return -2;
+        }
+
+        return 1;
     }
     
+private:
+    Hidato() {}
+    ~Hidato() {}
+
+    static Hidato instance;
+
+    std::vector<int> problem, solution;
+
 private:
     /* ----- Generator class ----- */
     class Generator {
@@ -198,6 +256,10 @@ private:
             next.clear();
             for (int i = 0; i < width * height; i++) next.push_back(0);
         }
+
+        void punch(float emptyRatio) {
+
+        }
         
     public:
         int width, height, size;
@@ -208,5 +270,7 @@ private:
     };
     
 };
+
+Hidato Hidato::instance = Hidato();
 
 #endif /* HidatoGenerator_h */
