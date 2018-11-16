@@ -45,9 +45,6 @@ public:
     int generate(std::vector<int> &map, int width, int height, float difficulty) {
         Random::setRandomSeed();
 
-        // set solution map
-        for (int i = 0; i < width * height; i++) solution.push_back(map[i]);
-
         Generator gen(map, width, height);
         
         int c = 10;
@@ -59,9 +56,7 @@ public:
         if (c <= 0) return -1;
 
         gen.punch(difficulty);
-
-        gen.putNumbers(map);
-        gen.putNumbers(solution);
+        map = gen.result();
         
         return 1;
     }
@@ -241,6 +236,12 @@ private:
             
             return ret;
         }
+
+        int getLastNumberPosition() {
+            int num = 1, ret = start;
+            while (num++ < realSize) ret = next[ret];
+            return ret;
+        }
         
         void copy(const Generator &data) {
             width = data.width;
@@ -258,7 +259,29 @@ private:
         }
 
         void punch(float emptyRatio) {
+            visibleMap = map;
 
+            int visibleCount = realSize * (1 - emptyRatio) - 2, end = getLastNumberPosition();
+            // 시작 숫자와 끝 숫자는 무조건 보여야 함
+            visibleMap[start] = 1;
+            visibleMap[end] = 1;
+            while (visibleCount) {
+                int randomIndex = getRandomIndex();
+                if (visibleMap[randomIndex] == 1) continue;
+                visibleMap[randomIndex] = 1;
+                visibleCount--;
+            }
+        }
+
+        std::vector<int> result() {
+            puzzle = map;
+            putNumbers(puzzle);
+
+            for (int i = 0; i < size; i++) {
+                if (visibleMap[i] == 0) puzzle[i] = 0;
+            }
+
+            return puzzle;
         }
         
     public:
@@ -266,6 +289,8 @@ private:
         int realSize = 0; // x칸을 제외 한 실제 크기
         int start;
         std::vector<int> next, map;
+        std::vector<int> visibleMap; // 히다토 퍼즐에서 보일 부분이 담긴 배열
+        std::vector<int> puzzle; // 만들어진 히다토 퍼즐 결과물
         
     };
     

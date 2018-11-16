@@ -17,7 +17,7 @@ int main() {
     vector<int> map(width * height);
     for (int i = 0; i < width * height; i++) input >> map[i];
 
-    Hidato::get()->generate(map, width, height, 0.75f);
+    Hidato::get()->generate(map, width, height, 0.5f);
 
     /// ----------
 
@@ -43,29 +43,28 @@ int main() {
 
     /// verify
 
-    ifstream inputPuzzle("output.txt");
+    // ifstream inputPuzzle("output.txt");
 
-    inputPuzzle >> width >> height;
+    // inputPuzzle >> width >> height;
 
-    vector<int> puzzle(width * height);
-    for (int i = 0; i < width * height; i++) inputPuzzle >> puzzle[i];
+    // vector<int> puzzle(width * height);
+    // for (int i = 0; i < width * height; i++) inputPuzzle >> puzzle[i];
 
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            if (puzzle[i * width + j] == -1) printf("%3s", "");
-            else if (puzzle[i * width + j] == 0) printf("xx ");
-            else printf("%02d ", puzzle[i * width + j]);
-        }
-        cout << "\n";
-    }
+    // for (int i = 0; i < height; i++) {
+    //     for (int j = 0; j < width; j++) {
+    //         if (puzzle[i * width + j] == -1) printf("%3s", "");
+    //         else if (puzzle[i * width + j] == 0) printf("xx ");
+    //         else printf("%02d ", puzzle[i * width + j]);
+    //     }
+    //     cout << "\n";
+    // }
 
-    int ret = Hidato::get()->verify(puzzle, width, height);
-    switch(ret) {
-    case 1:     cout << "correct" << endl;          break;
-    case -1:    cout << "different" << endl;        break;
-    case -2:    cout << "not connected" << endl;    break;
-    default:    cout << "error" << endl;       break;
-    }
+    // switch(Hidato::get()->verify(puzzle, width, height)) {
+    // case 1:     cout << "correct" << endl;          break;
+    // case -1:    cout << "different" << endl;        break;
+    // case -2:    cout << "not connected" << endl;    break;
+    // default:    cout << "error" << endl;            break;
+    // }
 
     /// ----------
 
