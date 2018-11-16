@@ -45,6 +45,8 @@ public:
     int generate(std::vector<int> &map, int width, int height, float difficulty) {
         Random::setRandomSeed();
 
+        solution = map;
+
         Generator gen(map, width, height);
         
         int c = 10;
@@ -55,20 +57,28 @@ public:
         }
         if (c <= 0) return -1;
 
+        gen.putNumbers(solution);
+
         gen.punch(difficulty);
         map = gen.result();
+        problem = map;
         
         return 1;
+    }
+
+    std::vector<int> getSolution() {
+        return solution;
     }
 
     // 1 = 정답, -1 = 문제와 다름, -2 = 이어지지 않음, -3 = 기타
     int verify(std::vector<int> &map, int width, int height) {
         // difference check
-        // for (int i = 0; i < width * height; i++) {
-        //     if (solution[i] != map[i]) {
-        //         return -1;
-        //     }
-        // }
+        for (int i = 0; i < width * height; i++) {
+            // 문제지에서 빈칸은 넘어가고, 문제지와 입력으로 받은 해결된 퍼즐 맵에서 다른 부분이 있으면 틀린 답으로 처리
+            if (problem[i] != 0 && problem[i] != map[i]) {
+                return -1;
+            }
+        }
 
         // find 1 index and last number(max number)
         int index = -1, checkNumber = 2, lastNumber = -1;
@@ -237,7 +247,7 @@ private:
             return ret;
         }
 
-        int getLastNumberPosition() {
+        int getLastNumberIndex() {
             int num = 1, ret = start;
             while (num++ < realSize) ret = next[ret];
             return ret;
@@ -261,7 +271,7 @@ private:
         void punch(float emptyRatio) {
             visibleMap = map;
 
-            int visibleCount = realSize * (1 - emptyRatio) - 2, end = getLastNumberPosition();
+            int visibleCount = realSize * (1 - emptyRatio) - 2, end = getLastNumberIndex();
             // 시작 숫자와 끝 숫자는 무조건 보여야 함
             visibleMap[start] = 1;
             visibleMap[end] = 1;

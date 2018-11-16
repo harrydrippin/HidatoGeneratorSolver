@@ -39,6 +39,18 @@ int main() {
     output << "\n";
     output.close();
 
+    /// show solution
+
+    auto solution = Hidato::get()->getSolution();
+    cout << "\n";
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < width; j++) {
+            if (solution[i * width + j] == -1) printf("%3s", "");
+            else printf("%02d ", solution[i * width + j]);
+        }
+        cout << "\n";
+    }
+
     /// ----------
 
     /// verify
