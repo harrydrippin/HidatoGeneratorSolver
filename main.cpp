@@ -5,16 +5,22 @@
 #include <fstream>
 #include <stdio.h>
 #include <chrono>
+#include <iomanip>
 
 using namespace std;
 
 void printPuzzle(const vector<int> map, int width, int height) {
+    // find last number
+    int max = -1, digit = 1;
+    for (int i = 0; i < width * height; i++) if (map[i] > max) max = map[i];
+    while (max /= 10) digit += 1;
+
     for (int i = 0; i < height; i++) {
         cout << "\t";
         for (int j = 0; j < width; j++) {
-            if (map[i * width + j] == -1) printf("%3s", "");
-            else if (map[i * width + j] == 0) printf("xx ");
-            else printf("%02d ", map[i * width + j]);
+            if (map[i * width + j] == -1) cout << setw(digit + 1) << " ";
+            else if (map[i * width + j] == 0) cout << setw(digit) << "." << " ";
+            else cout << setw(digit) << map[i * width + j] << " ";
         }
         cout << "\n";
     }
