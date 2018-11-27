@@ -26,7 +26,7 @@ class Solver {
             col = max_col;
 
             arr = new int[row*col];
-            isCheckArr = new bool[row*col+1];
+            isCheckArr = new bool[row*col];
 
             // isCheckArr 0으로 모두 초기화
             for(int i=0; i<=row*col; i++) {  
