@@ -26,7 +26,7 @@ class Solver {
             col = max_col;
 
             arr = new int[row*col];
-            isCheckArr = new bool[row*col];
+            isCheckArr = new bool[row*col+1];
 
             // isCheckArr 0으로 모두 초기화
             for(int i=0; i<=row*col; i++) {  
@@ -47,7 +47,7 @@ class Solver {
                 count++;
             }
 
-            cout << "최대값 : " << max << endl;
+//             cout << "최대값 : " << max << endl;
             findStartPoint(x, y); // 1을 찾아주고 
             bool solveCheck = search(x, y, 2); // 값이 1인 인덱스에서부터 탐색 시작 
             
