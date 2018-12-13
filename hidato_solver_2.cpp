@@ -107,7 +107,7 @@ class Solver {
                 int row_tmp = x + dx[i];
 				int col_tmp = y + dy[i];
 
-                    // 인덱스가 -1이거나 행,열 사이즈가 초과되면 continue
+                // 인덱스가 -1이거나 행,열 사이즈가 초과되면 continue
                 if ((row_tmp < 0) || (col_tmp < 0) || (row_tmp >= row) || (col_tmp >= col)) 
                     continue;
                 if (arr[row_tmp + col_tmp * row] == 0) {
